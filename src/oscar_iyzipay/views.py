@@ -18,6 +18,7 @@ from oscar.core.loading import get_model, get_class
 import phonenumbers
 from ipware import get_client_ip
 import iyzipay
+import ujson
 
 # get moodel
 Order = get_model("order", "Order")
@@ -26,8 +27,9 @@ OrderPlacementMixin = get_class("checkout.mixins", "OrderPlacementMixin")
 RedirectRequired = get_class('payment.exceptions', 'RedirectRequired')
 UnableToPlaceOrder = get_class('order.exceptions', 'UnableToPlaceOrder')
 ShippingEventType = get_model("order", "ShippingEventType")
+OrderNumberGenerator = get_class("order.utils", "OrderNumberGenerator")
 
-sozlukToken = list()
+iyipay_token = []
 
 options = {
     'api_key': settings.IYZICO_API_KEY,
@@ -35,19 +37,6 @@ options = {
     'base_url': settings.IYZICO_BASE_URL
 }
 
-# Subclass the core Oscar view so we can customise
-class PaymentDetailsView(views.PaymentDetailsView):
-    def handle_payment(self, order_number, _):
-        global submission
-        submission = self.get_context_data()
-        submission['order_number'] = order_number
-        if settings.USE_I18N:
-            lang = get_language()
-            submission['lang'] = lang
-            url = f"/{lang}/checkout/get/"
-        else:
-            url = "/checkout/get/"
-        raise RedirectRequired(url)
 
 class ShippingAddressView(CoreShippingAddressView):
     success_url = reverse_lazy("checkout:preview")
@@ -59,6 +48,7 @@ class ShippingMethodView(CoreShippingMethodView):
 class Iyzipay(OrderPlacementMixin, View):
     # get the info for iyzipay payment
     def get(self, request):
+        submission = self.get_context_data()
         basket = submission['basket']
         paid_price = float(submission['order_total'].incl_tax)
         user = submission['user']
@@ -72,7 +62,7 @@ class Iyzipay(OrderPlacementMixin, View):
         # get ip from the client
         ipaddr, _ = get_client_ip(request)
         user_locale = locale.getlocale()[0]
-        country = usr_info.country
+        country = usr_info.country_id
         if ipaddr is None:
             # Unable to get the client's IP address
             # To be implemented
@@ -146,14 +136,15 @@ class Iyzipay(OrderPlacementMixin, View):
         checkout_form_initialize = iyzipay.CheckoutFormInitialize().create(req, options)
         content = checkout_form_initialize.read().decode('utf-8')
 
-        json_content = json.loads(content)
-        sozlukToken.append(json_content["token"])
+        json_content = ujson.loads(content)
+        iyipay_token.append(json_content["token"])
         return HttpResponse(json_content["checkoutFormContent"])
 
     def handle_order_placement(self):
+        submission = self.get_context_data()
         # added to save the payment
         order_total = submission['order_total']
-        order_number = submission['order_number']
+        order_number = OrderNumberGenerator().order_number(self.submission['basket'])
         source_type, __ = models.SourceType.objects.get_or_create(
             name="iyzico")
         source = models.Source(
@@ -199,11 +190,11 @@ class Iyzipay(OrderPlacementMixin, View):
         request = {
             'locale': 'tr',
             'conversationId': '123456789',
-            'token': sozlukToken[-1]
+            'token': iyipay_token[-1]
         }
         checkout_form_result = iyzipay.CheckoutForm().retrieve(request, options)
         result = checkout_form_result.read().decode('utf-8')
-        sonuc = json.loads(result, object_pairs_hook=list)
+        sonuc = ujson.loads(result, object_pairs_hook=list)
 
         if sonuc[0][1] == 'success':
             context['success'] = 'Başarılı İŞLEMLER'
@@ -228,10 +219,13 @@ class Iyzipay(OrderPlacementMixin, View):
             context['failure'] = 'Başarısız'
             return HttpResponseRedirect(reverse('failure'), context)
 
-def success(request):
-    order_obj = get_object_or_404(Order, number=submission['order_number'])
-    template = "oscar/checkout/thank_you.html"
-    return render(request, template, {'order':order_obj})
+@method_decorator(csrf_exempt, name='dispatch')
+class ThankYouView(views.ThankYouView):
+    def dispatch(self, *args, **kwargs):
+        return super(ThankYouView, self).dispatch(*args, **kwargs)
+
+    def success(self, request, *args, **kwargs):
+        return HttpResponseRedirect(reverse('checkout:thank-you'))
 
 def failure(request):
     error_msg = _("A problem occurred while placing this order. Please contact customer services.")

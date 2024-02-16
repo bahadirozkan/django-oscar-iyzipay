@@ -10,6 +10,7 @@ python = "^3.12"
 django-oscar = "^3.2.2"
 iyzipay = "^1.0.42"
 django-ipware = "^6.0.3"
+ujson = "^5.9.0"
 
 
 [build-system]
