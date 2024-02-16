@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "This package provides integration between django-oscar and iyzipay, a payment gateway"
 authors = ["Bahadır Özkan <bahadirozkan@gmail.com>"]
 readme = "README.md"
+packages = [{include = "django_oscar_iyzipay"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -11,7 +12,6 @@ django-oscar = "^3.2.2"
 iyzipay = "^1.0.42"
 django-ipware = "^6.0.3"
 ujson = "^5.9.0"
-
 
 [build-system]
 requires = ["poetry-core"]
