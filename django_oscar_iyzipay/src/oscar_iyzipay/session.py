@@ -10,7 +10,7 @@ SurchargeApplicator = get_class("checkout.applicator", "SurchargeApplicator")
 
 
 class CheckoutSessionMixin(CoreCheckoutSessionMixin):
-          
+
     def dispatch(self, request, *args, **kwargs):
         # Assign the checkout session manager so it's available in all checkout
         # views.
@@ -31,7 +31,7 @@ class CheckoutSessionMixin(CoreCheckoutSessionMixin):
             return http.HttpResponseRedirect(e.url)
 
         return super().dispatch(request, *args, **kwargs)
-        
+
     def build_submission(self, **kwargs):
         """
         Return a dict of data that contains everything required for an order
