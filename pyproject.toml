@@ -1,10 +1,19 @@
 [tool.poetry]
 name = "django-oscar-iyzipay"
-version = "0.1.4"
+version = "0.1.7"
 description = "Integration between django-oscar and iyzipay"
 authors = ["Bahadır Özkan <bahadirozkan@gmail.com>"]
 readme = "README.md"
-packages = [{include = "django_oscar_iyzipay"}]
+homepage = "https://github.com/bahadirozkan/django-oscar-iyzipay"
+packages = [
+    {include = "oscar_iyzipay/checkout"},
+    {include = "oscar_iyzipay/address"},
+    {include = "oscar_iyzipay/order"},
+]
+
+include = [
+    {path = "oscar_iyzipay/templates", format = ["sdist", "wheel"]}
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"

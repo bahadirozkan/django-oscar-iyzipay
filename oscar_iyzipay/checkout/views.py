@@ -44,7 +44,7 @@ class ShippingMethodView(CoreShippingMethodView):
 
 
 @method_decorator(csrf_exempt, name="dispatch")
-class Iyzipay(OrderPlacementMixin, View):
+class Iyzipay(views.PaymentDetailsView, View):
     # get the info for iyzipay payment
     def get(self, request):
         submission = self.get_context_data()
@@ -236,5 +236,5 @@ def failure(request):
     error_msg = _(
         "A problem occurred while placing this order. Please contact customer services."
     )
-    template = "oscar/checkout/failure.html"
+    template = "../templates/oscar/checkout/failure.html"
     return render(request, template, {"failure": error_msg})
