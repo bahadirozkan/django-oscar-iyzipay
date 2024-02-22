@@ -14,7 +14,7 @@ class CheckoutSessionMixin(CoreCheckoutSessionMixin):
 
     def dispatch(self, request, *args, **kwargs):
         """
-        Assign the checkout session manager so it's available 
+        Assign the checkout session manager so it's available
         in all checkout views.
         """
         self.checkout_session = CheckoutSessionData(request)

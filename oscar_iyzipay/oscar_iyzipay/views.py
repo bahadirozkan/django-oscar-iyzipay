@@ -1,4 +1,5 @@
 """Iyzipay gateway logic is defined here"""
+
 import locale
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
@@ -48,6 +49,7 @@ class Iyzipay(views.PaymentDetailsView, View):
     For Non-Turkish people you may use the default TCKN
     1111111111
     """
+
     def get(self, request):
         """get the info for iyzipay payment"""
         submission = self.get_context_data()
@@ -198,9 +200,9 @@ class Iyzipay(views.PaymentDetailsView, View):
     def post(self, request):
         """
         Creates and order if the payment is successful
-        
-        Redirects to either order confirmation or 
-        failure page.        
+
+        Redirects to either order confirmation or
+        failure page.
         """
         request = {
             "locale": "tr",
@@ -211,7 +213,7 @@ class Iyzipay(views.PaymentDetailsView, View):
         result = checkout_form_result.read().decode("utf-8")
         sonuc = ujson.loads(result)
 
-        if sonuc['status'] == "success":
+        if sonuc["status"] == "success":
             try:
                 self.handle_order_placement()
             except UnableToPlaceOrder as e:
@@ -236,6 +238,7 @@ class Iyzipay(views.PaymentDetailsView, View):
 @method_decorator(csrf_exempt, name="dispatch")
 class ThankYouView(views.ThankYouView):
     """Override Oscar Thank You view"""
+
     def success(self, _):
         """Return order confirmation"""
         return HttpResponseRedirect(reverse("checkout:thank-you"))
