@@ -10,10 +10,13 @@ SurchargeApplicator = get_class("checkout.applicator", "SurchargeApplicator")
 
 
 class CheckoutSessionMixin(CoreCheckoutSessionMixin):
+    """Overrides Oscar's CoreCheckoutSessionMixin to apply tax"""
 
     def dispatch(self, request, *args, **kwargs):
-        # Assign the checkout session manager so it's available in all checkout
-        # views.
+        """
+        Assign the checkout session manager so it's available 
+        in all checkout views.
+        """
         self.checkout_session = CheckoutSessionData(request)
 
         # Check if this view should be skipped

@@ -1,3 +1,4 @@
+"""Iyzipay gateway logic is defined here"""
 import locale
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
@@ -26,8 +27,11 @@ UnableToPlaceOrder = get_class("order.exceptions", "UnableToPlaceOrder")
 ShippingEventType = get_model("order", "ShippingEventType")
 OrderNumberGenerator = get_class("order.utils", "OrderNumberGenerator")
 
+# A global list item to store the token for validation.
+# May be included in the class
 iyipay_token = []
 
+# These needs to be provided in the settings.py
 options = {
     "api_key": settings.IYZICO_API_KEY,
     "secret_key": settings.IYZICO_SECRET_KEY,
@@ -35,18 +39,17 @@ options = {
 }
 
 
-class ShippingAddressView(CoreShippingAddressView):
-    success_url = reverse_lazy("checkout:preview")
-
-
-class ShippingMethodView(CoreShippingMethodView):
-    success_url = reverse_lazy("checkout:preview")
-
-
 @method_decorator(csrf_exempt, name="dispatch")
 class Iyzipay(views.PaymentDetailsView, View):
-    # get the info for iyzipay payment
+    """
+    Main class that gets and validates the payment data
+    It doesn't store the credit card info. Needs user info
+    such as name, address, phone, and identification number
+    For Non-Turkish people you may use the default TCKN
+    1111111111
+    """
     def get(self, request):
+        """get the info for iyzipay payment"""
         submission = self.get_context_data()
         basket = submission["basket"]
         paid_price = float(submission["order_total"].incl_tax)
@@ -95,6 +98,7 @@ class Iyzipay(views.PaymentDetailsView, View):
         }
 
         basket_items = []
+        # gets all the items in the basket
         line = basket.all_lines()
         price = 0
         for basket_item in line:
@@ -111,6 +115,7 @@ class Iyzipay(views.PaymentDetailsView, View):
                     "price": line_price,
                 }
             )
+            # Total price after adding all line prices
             price += line_price
 
         # Request dict to be sent to iyzipay
@@ -120,6 +125,7 @@ class Iyzipay(views.PaymentDetailsView, View):
             "conversationId": str(100000000 + basket.id),
             "price": price,
             "paidPrice": paid_price,
+            # Needs overriding if you want other currencies
             "currency": "TRY",
             # baskedId logic can be replaced
             "basketId": str(100000 + basket.id),
@@ -131,8 +137,9 @@ class Iyzipay(views.PaymentDetailsView, View):
             "billingAddress": address,
             "basketItems": basket_items,
         }
-
+        # Initialize the iyzipay form
         checkout_form_initialize = iyzipay.CheckoutFormInitialize().create(req, options)
+        # Read the data to direct to the checkout form and store the token
         content = checkout_form_initialize.read().decode("utf-8")
 
         json_content = ujson.loads(content)
@@ -140,10 +147,11 @@ class Iyzipay(views.PaymentDetailsView, View):
         return HttpResponse(json_content["checkoutFormContent"])
 
     def handle_order_placement(self):
+        """Overriden from Oscar to pass iyzipay info"""
         submission = self.get_context_data()
         # added to save the payment
         order_total = submission["order_total"]
-        order_number = OrderNumberGenerator().order_number(self.submission["basket"])
+        order_number = OrderNumberGenerator().order_number(submission["basket"])
         source_type, __ = models.SourceType.objects.get_or_create(name="iyzico")
         source = models.Source(
             source_type=source_type,
@@ -156,7 +164,7 @@ class Iyzipay(views.PaymentDetailsView, View):
         self.add_payment_event("Processed", order_total.incl_tax)
 
         # Place order
-        super(Iyzipay, self).handle_order_placement(
+        super().handle_order_placement(
             order_number,
             submission["user"],
             submission["basket"],
@@ -188,8 +196,12 @@ class Iyzipay(views.PaymentDetailsView, View):
 
     # post data to validate payment
     def post(self, request):
-        context = dict()
-
+        """
+        Creates and order if the payment is successful
+        
+        Redirects to either order confirmation or 
+        failure page.        
+        """
         request = {
             "locale": "tr",
             "conversationId": "123456789",
@@ -197,10 +209,9 @@ class Iyzipay(views.PaymentDetailsView, View):
         }
         checkout_form_result = iyzipay.CheckoutForm().retrieve(request, options)
         result = checkout_form_result.read().decode("utf-8")
-        sonuc = ujson.loads(result, object_pairs_hook=list)
+        sonuc = ujson.loads(result)
 
-        if sonuc[0][1] == "success":
-            context["success"] = "Başarılı İŞLEMLER"
+        if sonuc['status'] == "success":
             try:
                 self.handle_order_placement()
             except UnableToPlaceOrder as e:
@@ -216,23 +227,22 @@ class Iyzipay(views.PaymentDetailsView, View):
                 self.restore_frozen_basket()
                 return HttpResponseRedirect(reverse("failure"), e)
 
-            return HttpResponseRedirect(reverse("success"), context)
+            return HttpResponseRedirect(reverse("success"))
 
-        if sonuc[0][1] == "failure":
-            context["failure"] = "Başarısız"
-            return HttpResponseRedirect(reverse("failure"), context)
+        else:
+            return HttpResponseRedirect(reverse("failure"))
 
 
 @method_decorator(csrf_exempt, name="dispatch")
 class ThankYouView(views.ThankYouView):
-    def dispatch(self, *args, **kwargs):
-        return super(ThankYouView, self).dispatch(*args, **kwargs)
-
-    def success(self, request, *args, **kwargs):
+    """Override Oscar Thank You view"""
+    def success(self, _):
+        """Return order confirmation"""
         return HttpResponseRedirect(reverse("checkout:thank-you"))
 
 
 def failure(request):
+    """Failure view, can be improved. It can redirect to basket with an alert"""
     error_msg = _(
         "A problem occurred while placing this order. Please contact customer services."
     )
