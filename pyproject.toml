@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-oscar-iyzipay"
-version = "1.0.0"
+version = "1.0.1"
 description = "Integration between django-oscar and iyzipay"
 authors = ["Bahadır Özkan <bahadirozkan@gmail.com>"]
 readme = "README.md"
@@ -14,7 +14,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "<=3.9"
 django-oscar = "<=3.1"
 iyzipay = "^1.0.41"
 django-ipware = "^6.0.3"
