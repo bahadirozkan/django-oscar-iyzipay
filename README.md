@@ -2,6 +2,8 @@
 
 Integration between Django Oscar and Iyzipay for seamless payment processing.
 
+![Static Badge](https://img.shields.io/badge/pypi-v1.0.1-blue)
+
 ## Overview
 
 This package provides integration between [Django Oscar](https://github.com/django-oscar/django-oscar) and [Iyzipay](https://github.com/iyzico/iyzipay-python) payment gateway, allowing Django Oscar-based e-commerce websites to process payments securely and efficiently using iyzico's payment services.
@@ -41,7 +43,7 @@ To integrate Django Oscar with Iyzipay, follow these steps:
 	path('', include('oscar_iyzipay.oscar_iyzipay.urls')),
 	```
 	- iyzipay expects an identification number (11 digits) and a phone number (not mandatory in Oscar). How to do this can be found in the [recipes](https://github.com/bahadirozkan/django-oscar-iyzipay/tree/main/documentation/recipes.py).
-
+3.	The package automatically adds tax to each product. Tax is set as %10. Feel free to override this. An option to enable/disable tax and choose the rate will be implemented.
 
 
 ## Contributing
