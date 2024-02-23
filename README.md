@@ -2,7 +2,7 @@
 
 Integration between Django Oscar and Iyzipay for seamless payment processing.
 
-![Static Badge](https://img.shields.io/badge/pypi-v1.0.1-blue)
+[![Static Badge](https://img.shields.io/badge/pypi-v1.0.1-blue)](https://pypi.org/project/django-oscar-iyzipay/)
 
 ## Overview
 
