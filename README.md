@@ -2,7 +2,7 @@
 
 Integration between Django Oscar and Iyzipay for seamless payment processing.
 
-[![Static Badge](https://img.shields.io/badge/pypi-v1.0.1-blue)](https://pypi.org/project/django-oscar-iyzipay/)
+[![Static Badge](https://img.shields.io/badge/pypi-v1.0.3-blue)](https://pypi.org/project/django-oscar-iyzipay/)
 
 ## Overview
 
@@ -54,6 +54,7 @@ Contributions are welcome! Below are the main action points:
 - [ ] Test for django-oscar 3.2
 - [ ] Add tests
 - [ ] Feature: Add enable installments option. (Default to 1)
+- [ ] Feature: Implement tax logic
 
 
 ## License
