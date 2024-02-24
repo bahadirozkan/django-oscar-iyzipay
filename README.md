@@ -2,7 +2,7 @@
 
 Integration between Django Oscar and Iyzipay for seamless payment processing.
 
-[![Static Badge](https://img.shields.io/badge/pypi-v1.0.3-blue)](https://pypi.org/project/django-oscar-iyzipay/)
+[![Static Badge](https://img.shields.io/badge/pypi-v1.0.4-blue)](https://pypi.org/project/django-oscar-iyzipay/)
 
 ## Overview
 
@@ -42,8 +42,8 @@ To integrate Django Oscar with Iyzipay, follow these steps:
 	```python
 	path('', include('oscar_iyzipay.oscar_iyzipay.urls')),
 	```
-	- iyzipay expects an identification number (11 digits) and a phone number (not mandatory in Oscar). How to do this can be found in the [recipes](https://github.com/bahadirozkan/django-oscar-iyzipay/tree/main/documentation/recipes.py).
-3.	The package automatically adds tax to each product. Tax is set as %10. Feel free to override this. An option to enable/disable tax and choose the rate will be implemented.
+	- iyzipay expects an identification number (11 digits) and a phone number (not mandatory in Oscar). How to do this can be found in the [add_model_items.py](https://github.com/bahadirozkan/django-oscar-iyzipay/tree/main/documentation/add_model_items.py).
+3.	Finally override any Oscar template to direct to iyzipay gateway. An example is procided in [modify_template.html](https://github.com/bahadirozkan/django-oscar-iyzipay/tree/main/documentation/modify_template.html)
 
 
 ## Contributing
@@ -54,8 +54,6 @@ Contributions are welcome! Below are the main action points:
 - [ ] Test for django-oscar 3.2
 - [ ] Add tests
 - [ ] Feature: Add enable installments option. (Default to 1)
-- [ ] Feature: Implement tax logic
-
 
 ## License
 

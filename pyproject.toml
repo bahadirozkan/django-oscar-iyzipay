@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-oscar-iyzipay"
-version = "1.0.3"
+version = "1.0.4"
 description = "Integration between django-oscar and iyzipay"
 authors = ["Bahadır Özkan <bahadirozkan@gmail.com>"]
 readme = "README.md"
